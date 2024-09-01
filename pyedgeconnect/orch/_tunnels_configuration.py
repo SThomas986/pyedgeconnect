@@ -405,7 +405,10 @@ def get_tunnels_between_appliances_config_data(
     if state is not None:
         path += "&state={}".format(state)
 
-    data = {"ids": ne_pk_list}
+    if self.orch_version >= 9.3:
+        data = {"nePks": ne_pk_list}
+    else:    
+        data = {"ids": ne_pk_list}
 
     return self._post(path, data=data)
 

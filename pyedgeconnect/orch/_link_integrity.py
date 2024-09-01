@@ -42,8 +42,8 @@ def link_integrity_test(
     ne_pk_2: str,
     bandwidth_2: str,
     path_2: str,
-    duration: int,
-    test_program: str,
+    duration: int = 10,
+    test_program: str = "iperf",
     dscp: str = "any",
 ) -> bool:
     """Start a link integrity test between two appliances using
@@ -76,21 +76,32 @@ def link_integrity_test(
         e.g. "tunnel_1".
     :type path_2: str
     :param duration: Duration of test in seconds
-    :type duration: int
+    :type duration: int, defaults to 10
     :param test_program: Test program to be used for this test. Can have
-        values of "iperf" or "tcpperf"
+        values of "iperf" or "tcpperf", defaults to "iperf"
     :type test_program: str
     :param dscp: DSCP value for test traffic, defaults to "any"
     :type dscp: str, optional
     :return: Returns True/False based on successful call
     :rtype: bool
     """
-    data = {
-        "appA": {"nePk": ne_pk_1, "bandwidth": bandwidth_1, "path": path_1},
-        "appB": {"nePk": ne_pk_2, "bandwidth": bandwidth_2, "path": path_2},
-        "duration": duration,
-        "testProgram": test_program,
-        "DSCP": dscp,
+    if self.orch_version >= 3.3:
+        data = {
+            "nePks": [ne_pk_1, ne_pk_2],
+            "nePkA": {"nePk": ne_pk_1, "bandwidth": bandwidth_1, "path": path_1},
+            "nePkB": {"nePk": ne_pk_2, "bandwidth": bandwidth_2, "path": path_2},
+            "duration": duration,
+            "testProgram": test_program,
+            "DSCP": dscp,
+    }
+
+    else:    
+        data = {
+            "appA": {"nePk": ne_pk_1, "bandwidth": bandwidth_1, "path": path_1},
+            "appB": {"nePk": ne_pk_2, "bandwidth": bandwidth_2, "path": path_2},
+            "duration": duration,
+            "testProgram": test_program,
+            "DSCP": dscp,
     }
 
     return self._post("/linkIntegrityTest/run", data=data, return_type="bool")
